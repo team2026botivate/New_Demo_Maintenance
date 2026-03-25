@@ -20,6 +20,8 @@ import AdminApproval from "./pages/Adminapprovel";
 import Settings from "./pages/Settings";
 import TeamReport from "./pages/Team";
 import Calendar from "./pages/Calendar";
+import DailyMachineLogPage from "./pages/DailyMachineLog";
+import BreakdownLogPage from "./pages/BreakdownLog";
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthStore from "./store/authStore";
 
@@ -109,6 +111,8 @@ function App() {
           <Route path="tasks/:id" element={<TaskDetails />} />
           <Route path="daily-report" element={<DailyReport />} />
           <Route path="calendar" element={<Calendar />} />
+          <Route path="daily-machine-log" element={<DailyMachineLogPage />} />
+          <Route path="breakdown-log" element={<BreakdownLogPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

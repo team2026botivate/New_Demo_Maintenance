@@ -12,6 +12,8 @@ import {
   FileText,
   Users,
   CalendarDays,
+  Activity,
+  AlertOctagon,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 
@@ -174,6 +176,39 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         >
           <CalendarDays size={20} className="flex-shrink-0" />
           <span className="text-sm font-medium">Calendar</span>
+        </NavLink>
+
+        {/* Predictive Maintenance - Admin and User */}
+        <div className="pt-2">
+          <p className="px-4 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Predictive</p>
+        </div>
+        <NavLink
+          to="/daily-machine-log"
+          className={({ isActive }) =>
+            `flex items-center gap-3 py-2.5 px-4 rounded-lg transition-colors ${
+              isActive
+                ? "bg-sky-500 text-white shadow-lg shadow-sky-200"
+                : "text-gray-600 hover:bg-sky-50 hover:text-sky-600"
+            }`
+          }
+          onClick={onClose}
+        >
+          <Activity size={20} className="flex-shrink-0" />
+          <span className="text-sm font-medium">Daily Machine Log</span>
+        </NavLink>
+        <NavLink
+          to="/breakdown-log"
+          className={({ isActive }) =>
+            `flex items-center gap-3 py-2.5 px-4 rounded-lg transition-colors ${
+              isActive
+                ? "bg-sky-500 text-white shadow-lg shadow-sky-200"
+                : "text-gray-600 hover:bg-sky-50 hover:text-sky-600"
+            }`
+          }
+          onClick={onClose}
+        >
+          <AlertOctagon size={20} className="flex-shrink-0" />
+          <span className="text-sm font-medium">Breakdown Log</span>
         </NavLink>
 
         {/* Reports - Admin only */}

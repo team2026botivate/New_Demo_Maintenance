@@ -28,7 +28,15 @@ import {
   Plus,
   Trash2,
   Filter,
+  Activity,
+  Heart,
+  TrendingDown,
 } from "lucide-react";
+import useAlertStore from "../store/alertStore";
+import useBreakdownStore from "../store/breakdownStore";
+import { getAllHealthScores, getHealthBarColor, getHealthColorClass, calculateMTBF } from "../services/healthScore";
+import { machineMasterData } from "../services/ruleEngine";
+import { runAllRules } from "../services/ruleEngine";
 
 const repairVsPurchaseData = [
   { name: "HP-102", purchasePrice: 85000, repairCost: 12450, status: "Active", department: "Manufacturing" },
@@ -72,6 +80,27 @@ const Dashboard = () => {
   const [filterValue, setFilterValue] = useState("all");
   const [tableData, setTableData] = useState<any[]>([]);
   const location = useLocation();
+  const { alerts } = useAlertStore();
+  const { breakdowns } = useBreakdownStore();
+  const healthScores = getAllHealthScores();
+  const healthy   = healthScores.filter((m) => m.score >= 70).length;
+  const moderate  = healthScores.filter((m) => m.score >= 50 && m.score < 70).length;
+  const highRisk  = healthScores.filter((m) => m.score < 50).length;
+  const highRiskMachines = healthScores.filter((m) => m.score < 50);
+  const activeAlerts = alerts.filter((a) => !a.isRead).slice(0, 5);
+
+  // Build downtime trend from breakdown logs (last 7 days)
+  const downtimeTrend = (() => {
+    const today = new Date();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (6 - i));
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayBreakdowns = breakdowns.filter((b) => b.date.startsWith(dateStr));
+      const totalDt = dayBreakdowns.reduce((s, b) => s + b.downtimeHours, 0);
+      return { date: d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }), downtime: totalDt };
+    });
+  })();
 
   useEffect(() => {
     if (location.state?.showSuccessModal) {
@@ -81,6 +110,11 @@ const Dashboard = () => {
       return () => clearTimeout(timer);
     }
   }, [location]);
+
+  // Run predictive rule engine on mount to seed alerts
+  useEffect(() => {
+    runAllRules();
+  }, []);
 
   const handleCardClick = (cardType: string) => {
     setSelectedCard(cardType);
@@ -534,6 +568,156 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          PREDICTIVE MAINTENANCE WIDGETS
+          ═══════════════════════════════════════════════════════════════ */}
+      <div className="mt-8 space-y-6">
+        <div className="flex items-center gap-3">
+          <AlertTriangle size={18} className="text-amber-500" />
+          <h2 className="text-base font-bold text-gray-800 uppercase tracking-wider">Predictive Intelligence</h2>
+          <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent" />
+        </div>
+
+        {/* Widget Row 1: Health Overview + Alerts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Machine Health Overview */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b bg-gradient-to-r from-sky-50 to-white flex items-center gap-2">
+              <CheckCircle size={16} className="text-sky-500" />
+              <h3 className="text-sm font-semibold text-gray-800">Machine Health Overview</h3>
+            </div>
+            {/* Summary badges */}
+            <div className="grid grid-cols-3 gap-3 p-4 pb-3 border-b bg-gray-50">
+              <div className="text-center"><p className="text-2xl font-bold text-green-600">{healthy}</p><p className="text-xs text-gray-500 mt-0.5">Healthy</p></div>
+              <div className="text-center"><p className="text-2xl font-bold text-amber-600">{moderate}</p><p className="text-xs text-gray-500 mt-0.5">Moderate</p></div>
+              <div className="text-center"><p className="text-2xl font-bold text-red-600">{highRisk}</p><p className="text-xs text-gray-500 mt-0.5">High Risk</p></div>
+            </div>
+            {/* Per-machine list */}
+            <div className="divide-y">
+              {healthScores.map((m) => (
+                <div key={m.machineId} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-800 truncate">{m.name}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                      <div className={`h-1.5 rounded-full transition-all ${getHealthBarColor(m.score)}`} style={{ width: `${m.score}%` }} />
+                    </div>
+                  </div>
+                  <span className={`flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${getHealthColorClass(m.score)}`}>
+                    {m.score}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upcoming Alerts */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b bg-gradient-to-r from-red-50 to-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={16} className="text-red-500" />
+                <h3 className="text-sm font-semibold text-gray-800">Upcoming Maintenance Alerts</h3>
+              </div>
+              {alerts.length > 0 && (
+                <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">{alerts.length} active</span>
+              )}
+            </div>
+            <div className="divide-y max-h-72 overflow-y-auto">
+              {activeAlerts.length === 0 ? (
+                <div className="px-5 py-8 text-center text-gray-400 text-sm"><CheckCircle size={24} className="mx-auto mb-2 text-green-400" />All clear! No active alerts.</div>
+              ) : (
+                activeAlerts.map((alert) => (
+                  <div key={alert.id} className="px-5 py-3 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <span className={`flex-shrink-0 mt-0.5 w-2 h-2 rounded-full ${alert.severity === 'Critical' ? 'bg-red-500' : alert.severity === 'High' ? 'bg-orange-500' : 'bg-yellow-500'}`} />
+                      <div>
+                        <p className="text-xs font-semibold text-gray-800">{alert.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 truncate">{alert.machineName}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{new Date(alert.createdAt).toLocaleDateString('en-IN')}</p>
+                      </div>
+                      <span className={`ml-auto flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${alert.severity === 'Critical' ? 'bg-red-100 text-red-700' : alert.severity === 'High' ? 'bg-orange-100 text-orange-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {alert.severity}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {alerts.length > 5 && (
+              <div className="px-5 py-2 border-t text-center text-xs text-sky-600 font-medium">
+                + {alerts.length - 5} more alerts
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Widget Row 2: Downtime Trend Chart + High Risk List */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Downtime Trend */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b bg-gradient-to-r from-orange-50 to-white flex items-center gap-2">
+              <BarChart2 size={16} className="text-orange-500" />
+              <h3 className="text-sm font-semibold text-gray-800">7-Day Downtime Trend (hrs)</h3>
+            </div>
+            <div className="p-4">
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={downtimeTrend} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(value: number) => [`${value}h`, 'Downtime']} />
+                  <Line type="monotone" dataKey="downtime" stroke="#f97316" strokeWidth={2} dot={{ r: 3, fill: '#f97316' }} activeDot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* High Risk Machines + MTBF */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b bg-gradient-to-r from-red-50 to-white flex items-center gap-2">
+              <AlertTriangle size={16} className="text-red-500" />
+              <h3 className="text-sm font-semibold text-gray-800">High Risk Machines & MTBF</h3>
+            </div>
+            {highRiskMachines.length === 0 ? (
+              <div className="px-5 py-8 text-center text-gray-400 text-sm"><CheckCircle size={24} className="mx-auto mb-2 text-green-400" />No high-risk machines.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-red-50">
+                    <tr>
+                      {['Machine', 'Health', 'MTBF (hrs)', 'Risk'].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-red-800 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {highRiskMachines.map((m) => {
+                      const mtbf = calculateMTBF(m.machineId);
+                      return (
+                        <tr key={m.machineId} className="border-b hover:bg-red-50/50 transition-colors">
+                          <td className="px-4 py-3 text-xs font-medium text-gray-800 whitespace-nowrap">{m.name}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 bg-gray-200 rounded-full h-1.5"><div className="h-1.5 rounded-full bg-red-500" style={{ width: `${m.score}%` }} /></div>
+                              <span className="text-xs font-bold text-red-700">{m.score}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-700">{mtbf ? `${mtbf}h` : 'N/A'}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">High Risk</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   );
