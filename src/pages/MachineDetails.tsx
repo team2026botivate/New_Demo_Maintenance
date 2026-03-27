@@ -19,7 +19,6 @@ import {
   Package,
   ShoppingCart,
   Building,
-  Link as LinkIcon,
 } from "lucide-react";
 import {
   LineChart,
@@ -593,24 +592,26 @@ const MachineDetails: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center mb-6 overflow-x-auto">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4 overflow-x-auto">
         <Link
           to="/machines"
-          className="flex items-center mr-4 text-sky-600 hover:text-sky-900"
+          className="flex items-center text-sky-600 hover:text-sky-900 font-bold text-sm whitespace-nowrap"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={20} className="mr-1" />
           <span>Back to Machines</span>
         </Link>
-        <h1 className="flex-1 text-lg md:text-xl font-bold text-gray-800">
+        <h1 className="flex-1 text-xl md:text-2xl font-black text-gray-900 tracking-tight whitespace-nowrap">
           {machine.name}
         </h1>
-        <div className="hidden md:flex items-center space-x-2">
-          {getStatusBadge(machine.status)}
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <div className="flex-1 sm:flex-none text-center">
+            {getStatusBadge(machine.status)}
+          </div>
           <Link
-            to={`/machines/₹{id}/edit`}
-            className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+            to={`/machines/${id}/edit`}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 rounded-xl shadow-lg shadow-gray-100 text-xs font-black text-gray-700 bg-white hover:bg-gray-50 transition-all active:scale-95 uppercase tracking-widest"
           >
-            <Edit size={16} className="mr-1" />
+            <Edit size={16} className="mr-2" />
             Edit
           </Link>
         </div>
@@ -621,7 +622,7 @@ const MachineDetails: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="flex -mb-px overflow-x-auto">
             <button
-              className={`py-4 px-6 font-medium text-xs border-b-2 ₹{
+              className={`py-4 px-6 font-medium text-xs border-b-2 ${
                 activeTab === "overview"
                   ? "border-sky-500 text-sky-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -631,7 +632,7 @@ const MachineDetails: React.FC = () => {
               Overview
             </button>
             <button
-              className={`py-4 px-6 font-medium text-xs border-b-2 ₹{
+              className={`py-4 px-6 font-medium text-xs border-b-2 ${
                 activeTab === "maintenance"
                   ? "border-sky-500 text-sky-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -641,7 +642,7 @@ const MachineDetails: React.FC = () => {
               Maintenance
             </button>
             <button
-              className={`py-4 px-6 font-medium text-xs border-b-2 ₹{
+              className={`py-4 px-6 font-medium text-xs border-b-2 ${
                 activeTab === "repairs"
                   ? "border-sky-500 text-sky-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -651,7 +652,7 @@ const MachineDetails: React.FC = () => {
               Repair History
             </button>
             <button
-              className={`py-4 px-6 font-medium text-xs border-b-2 ₹{
+              className={`py-4 px-6 font-medium text-xs border-b-2 ${
                 activeTab === "purchases"
                   ? "border-sky-500 text-sky-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -662,7 +663,7 @@ const MachineDetails: React.FC = () => {
               Purchases & Assets
             </button>
             <button
-              className={`py-4 px-6 font-medium text-xs border-b-2 ₹{
+              className={`py-4 px-6 font-medium text-xs border-b-2 ${
                 activeTab === "documents"
                   ? "border-sky-500 text-sky-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -672,7 +673,7 @@ const MachineDetails: React.FC = () => {
               Documents
             </button>
             <button
-              className={`py-4 px-6 font-medium text-xs border-b-2 ₹{
+              className={`py-4 px-6 font-medium text-xs border-b-2 ${
                 activeTab === "analytics"
                   ? "border-sky-500 text-sky-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"

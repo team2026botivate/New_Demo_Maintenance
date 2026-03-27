@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { AlertOctagon, Plus, Filter, Edit2, Check } from 'lucide-react';
+import { AlertOctagon, Plus, Filter, Edit2, Check, Calendar, User, Clock, ShieldAlert, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useBreakdownStore, { DOWNTIME_COST_PER_HOUR } from '../store/breakdownStore';
 import { runRulesForMachine } from '../services/ruleEngine';
 import { machineMasterData } from '../services/ruleEngine';
-import { BreakdownLog, BreakdownStatus, FailureType, SeverityLevel } from '../models/types';
+import { BreakdownStatus, FailureType, SeverityLevel } from '../models/types';
+import Modal from '../components/Modal';
 
 const FAILURE_TYPES: FailureType[] = ['Electrical', 'Mechanical', 'Software', 'Operator Error', 'Hydraulic', 'Pneumatic', 'Other'];
 const SEVERITY_LEVELS: SeverityLevel[] = ['Critical', 'Major', 'Minor'];
@@ -26,14 +27,14 @@ const severityColor = (s: SeverityLevel) => ({
   Critical: 'bg-red-100 text-red-700 border-red-200',
   Major:    'bg-orange-100 text-orange-700 border-orange-200',
   Minor:    'bg-yellow-100 text-yellow-700 border-yellow-200',
-}[s] ?? 'bg-gray-100 text-gray-700');
+}[s] ?? 'bg-gray-100 text-gray-700/50');
 
-const statusColor = (s: BreakdownStatus) => ({
-  Open:        'bg-red-100 text-red-700',
-  'In Progress': 'bg-blue-100 text-blue-700',
-  Resolved:    'bg-green-100 text-green-700',
-  Closed:      'bg-gray-100 text-gray-700',
-}[s] ?? 'bg-gray-100 text-gray-700');
+const statusVariant = (s: BreakdownStatus) => ({
+  Open:        'bg-red-100 text-red-700 border-red-200',
+  'In Progress': 'bg-sky-100 text-sky-700 border-sky-200',
+  Resolved:    'bg-green-100 text-green-700 border-green-200',
+  Closed:      'bg-gray-100 text-gray-600 border-gray-200',
+}[s] ?? 'bg-gray-100 text-gray-600 border-gray-200');
 
 const BreakdownLogPage: React.FC = () => {
   const { breakdowns, addBreakdown, updateBreakdown } = useBreakdownStore();
@@ -84,10 +85,6 @@ const BreakdownLogPage: React.FC = () => {
     setTimeout(() => runRulesForMachine(Number(form.machineId)), 500);
   };
 
-  const handleEditStatus = (bd: BreakdownLog) => {
-    setEditingId(bd.id);
-    setEditStatus(bd.status);
-  };
 
   const saveStatus = (id: string) => {
     updateBreakdown(id, { status: editStatus });
@@ -105,225 +102,201 @@ const BreakdownLogPage: React.FC = () => {
   const openCount = breakdowns.filter((b) => b.status === 'Open').length;
 
   const inputCls = (field: string) =>
-    `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 ${
-      errors[field] ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'
+    `w-full px-4 py-2 text-sm border rounded-xl focus:outline-none focus:ring-2 transition-all ${
+      errors[field] 
+        ? 'border-red-400 bg-red-50 focus:ring-red-200' 
+        : 'border-gray-200 bg-gray-50/50 hover:bg-white focus:bg-white focus:ring-red-100'
     }`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
         <div>
-          <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <AlertOctagon size={22} className="text-red-500" />
+          <h1 className="text-2xl font-black text-gray-900 flex items-center gap-3 tracking-tight">
+            <div className="p-2 bg-red-100 rounded-lg shadow-sm shadow-red-50">
+              <AlertOctagon size={24} className="text-red-600" />
+            </div>
             Breakdown Log
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Record and track machine failure events</p>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 ml-11">Failure Analysis & Downtime</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium shadow-sm"
+          onClick={() => setShowForm(true)}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all text-sm font-black shadow-xl shadow-red-100 hover:-translate-y-0.5 active:scale-95 uppercase tracking-widest w-full sm:w-auto"
         >
-          <Plus size={16} />
-          {showForm ? 'Cancel' : 'Report Breakdown'}
+          <Plus size={18} />
+          Report Breakdown
         </button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-red-100 p-4">
-          <p className="text-xs font-medium text-gray-500">Open Breakdowns</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{openCount}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-xs font-medium text-gray-500">Total Breakdowns</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">{breakdowns.length}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-amber-100 p-4">
-          <p className="text-xs font-medium text-gray-500">Total Downtime (filtered)</p>
-          <p className="text-2xl font-bold text-amber-600 mt-1">{totalDowntime.toFixed(0)}h</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-xs font-medium text-gray-500">Downtime Cost (filtered)</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">₹{totalCost.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-gray-400">@ ₹{DOWNTIME_COST_PER_HOUR}/hr</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Open Breakdowns', val: openCount, sub: 'Needs attention', color: 'red', icon: AlertOctagon },
+          { label: 'Total Events', val: breakdowns.length, sub: 'Lifetime count', color: 'gray', icon: FileText },
+          { label: 'Lost Time', val: `${totalDowntime.toFixed(0)}h`, sub: 'Filtered data', color: 'amber', icon: Clock },
+          { label: 'Impact', val: `₹${totalCost.toLocaleString('en-IN')}`, sub: `@ ₹${DOWNTIME_COST_PER_HOUR}/h`, color: 'rose', icon: ShieldAlert }
+        ].map((card, idx) => (
+          <div key={idx} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 hover:shadow-xl transition-all hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-3 text-gray-400">
+              <p className="text-[10px] font-black uppercase tracking-widest">{card.label}</p>
+              <card.icon size={16} />
+            </div>
+            <p className="text-3xl font-black text-gray-900">{card.val}</p>
+            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tight">{card.sub}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white rounded-xl shadow-lg border border-red-100 p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b flex items-center gap-2">
-            <AlertOctagon size={16} className="text-red-500" />
-            Report Breakdown Event
-          </h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Machine */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Machine *</label>
+      {/* Modal Form */}
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Report Machine Breakdown" maxWidth="max-w-4xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Machine *</label>
               <select className={inputCls('machineId')} value={form.machineId} onChange={(e) => setForm({ ...form, machineId: e.target.value })}>
                 <option value="">Select Machine...</option>
                 {machineMasterData.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
-              {errors.machineId && <p className="text-xs text-red-500 mt-1">{errors.machineId}</p>}
+              {errors.machineId && <p className="text-xs text-red-500 mt-1 ml-1">{errors.machineId}</p>}
             </div>
 
-            {/* Date */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Date & Time of Failure *</label>
-              <input type="datetime-local" className={inputCls('date')} value={form.date} max={new Date().toISOString().slice(0, 16)} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-              {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Failure Time *</label>
+              <div className="relative group">
+                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" />
+                <input type="datetime-local" className={`pl-10 ${inputCls('date')}`} value={form.date} max={new Date().toISOString().slice(0, 16)} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+              </div>
+              {errors.date && <p className="text-xs text-red-500 mt-1 ml-1">{errors.date}</p>}
             </div>
 
-            {/* Failure Type */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Failure Type *</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Failure Type *</label>
               <select className={inputCls('failureType')} value={form.failureType} onChange={(e) => setForm({ ...form, failureType: e.target.value as FailureType })}>
-                <option value="">Select Type...</option>
+                <option value="">Select failure type...</option>
                 {FAILURE_TYPES.map((ft) => <option key={ft} value={ft}>{ft}</option>)}
               </select>
-              {errors.failureType && <p className="text-xs text-red-500 mt-1">{errors.failureType}</p>}
+              {errors.failureType && <p className="text-xs text-red-500 mt-1 ml-1">{errors.failureType}</p>}
             </div>
 
-            {/* Severity */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Severity *</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Severity *</label>
               <select className={inputCls('severity')} value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value as SeverityLevel })}>
-                <option value="">Select Severity...</option>
+                <option value="">Select severity...</option>
                 {SEVERITY_LEVELS.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              {errors.severity && <p className="text-xs text-red-500 mt-1">{errors.severity}</p>}
+              {errors.severity && <p className="text-xs text-red-500 mt-1 ml-1">{errors.severity}</p>}
             </div>
 
-            {/* Downtime */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Downtime Hours *</label>
-              <input
-                type="number" min={0} step={0.5} placeholder="e.g. 4"
-                className={inputCls('downtimeHours')}
-                value={form.downtimeHours}
-                onChange={(e) => setForm({ ...form, downtimeHours: e.target.value })}
-              />
-              {errors.downtimeHours && <p className="text-xs text-red-500 mt-1">{errors.downtimeHours}</p>}
-              {form.downtimeHours && !isNaN(Number(form.downtimeHours)) && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Auto cost: ₹{(Number(form.downtimeHours) * DOWNTIME_COST_PER_HOUR).toLocaleString('en-IN')}
-                </p>
-              )}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Downtime Hours *</label>
+              <div className="relative group">
+                <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" />
+                <input type="number" min={0} step={0.5} placeholder="e.g. 4.5" className={`pl-10 ${inputCls('downtimeHours')}`} value={form.downtimeHours} onChange={(e) => setForm({ ...form, downtimeHours: e.target.value })} />
+              </div>
+              {errors.downtimeHours && <p className="text-xs text-red-500 mt-1 ml-1">{errors.downtimeHours}</p>}
             </div>
 
-            {/* Technician */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Technician Assigned</label>
-              <select className={inputCls('technicianAssigned')} value={form.technicianAssigned} onChange={(e) => setForm({ ...form, technicianAssigned: e.target.value })}>
-                <option value="">Unassigned</option>
-                <option>John Smith</option>
-                <option>Sarah Johnson</option>
-                <option>Mike Anderson</option>
-                <option>Priya Sharma</option>
-                <option>Amit Singh</option>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Technician</label>
+              <div className="relative group">
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" />
+                <select className={`pl-10 ${inputCls('technicianAssigned')}`} value={form.technicianAssigned} onChange={(e) => setForm({ ...form, technicianAssigned: e.target.value })}>
+                  <option value="">Unassigned</option>
+                  <option>John Smith</option>
+                  <option>Sarah Johnson</option>
+                  <option>Mike Anderson</option>
+                  <option>Priya Sharma</option>
+                  <option>Amit Singh</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 lg:col-span-3 space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Root Cause & Action *</label>
+              <textarea rows={3} placeholder="Describe the problem, cause, and any initial actions taken..." className={inputCls('rootCause')} value={form.rootCause} onChange={(e) => setForm({ ...form, rootCause: e.target.value })} />
+              {errors.rootCause && <p className="text-xs text-red-500 mt-1 ml-1">{errors.rootCause}</p>}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t uppercase tracking-widest font-bold text-[10px]">
+            <button type="button" onClick={() => { setShowForm(false); setErrors({}); }} className="px-6 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition-all">Cancel</button>
+            <button type="submit" className="px-8 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-md shadow-red-100 transition-all active:scale-95">Log Breakdown Event</button>
+          </div>
+        </form>
+      </Modal>
+      {/* Records Section */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col md:h-[600px]">
+        {/* Table Header/Filter */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-5 border-b bg-white">
+          <div>
+            <h2 className="text-lg font-black text-gray-900 tracking-tight">Breakdown Records</h2>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Historical trail of system failures</p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative group w-full sm:w-auto">
+              <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors" />
+              <select className="text-sm border border-gray-200 rounded-xl pl-10 pr-4 py-2 bg-gray-50/50 appearance-none w-full sm:min-w-[160px] focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all" value={filterMachine} onChange={(e) => setFilterMachine(e.target.value)}>
+                <option value="all">All Machines</option>
+                {machineMasterData.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
             </div>
-
-            {/* Root Cause */}
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Root Cause *</label>
-              <textarea rows={2} placeholder="Describe the root cause of the failure..." className={inputCls('rootCause')} value={form.rootCause} onChange={(e) => setForm({ ...form, rootCause: e.target.value })} />
-              {errors.rootCause && <p className="text-xs text-red-500 mt-1">{errors.rootCause}</p>}
-            </div>
-
-            {/* Action Taken */}
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Action Taken</label>
-              <textarea rows={2} placeholder="What was done to resolve the issue?" className={inputCls('actionTaken')} value={form.actionTaken} onChange={(e) => setForm({ ...form, actionTaken: e.target.value })} />
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
-              <select className={inputCls('status')} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as BreakdownStatus })}>
-                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-
-            {/* Submit */}
-            <div className="sm:col-span-2 lg:col-span-3 flex justify-end gap-3 pt-2 border-t">
-              <button type="button" onClick={() => { setShowForm(false); setErrors({}); }} className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
-              <button type="submit" className="px-5 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">Log Breakdown</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Filters + Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b bg-gray-50">
-          <h2 className="text-sm font-semibold text-gray-700">Breakdown Records</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <Filter size={14} className="text-gray-400" />
-            <select
-              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              value={filterMachine} onChange={(e) => setFilterMachine(e.target.value)}
-            >
-              <option value="all">All Machines</option>
-              {machineMasterData.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
-            <select
-              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-            >
+            <select className="text-sm border border-gray-200 rounded-xl px-4 py-2 bg-gray-50/50 w-full sm:min-w-[140px] focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-gray-700" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="all">All Statuses</option>
               {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-sky-50">
+        {/* Desktop Table Body */}
+        <div className="hidden md:block flex-1 overflow-auto relative scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          <table className="w-full border-separate border-spacing-0">
+            <thead className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm">
               <tr>
-                {['Date', 'Machine', 'Failure Type', 'Severity', 'Downtime', 'Cost', 'Technician', 'Status', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-sky-800 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                {['Date', 'Machine', 'Failure Type', 'Severity', 'Downtime', 'Impact', 'Operator', 'Status', 'Actions'].map((h) => (
+                  <th key={h} className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest border-b border-gray-200 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {filteredBreakdowns.length === 0 ? (
-                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400 text-sm">No breakdown records found</td></tr>
+                <tr>
+                  <td colSpan={9} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-400">
+                      <AlertOctagon size={48} className="mb-4 opacity-10" />
+                      <p className="text-base font-black uppercase tracking-widest">No downtime records found</p>
+                      <p className="text-[10px] font-bold">Try relaxing your filters</p>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 filteredBreakdowns.map((bd) => (
-                  <tr key={bd.id} className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{new Date(bd.date).toLocaleDateString('en-IN')}</td>
-                    <td className="px-4 py-3 text-xs font-medium text-gray-800 whitespace-nowrap">{bd.machineName}</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">{bd.failureType}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${severityColor(bd.severity)}`}>
-                        {bd.severity}
-                      </span>
+                  <tr key={bd.id} className="group hover:bg-sky-50/30 transition-colors">
+                    <td className="px-6 py-4 text-xs text-gray-600 whitespace-nowrap font-bold">{new Date(bd.date).toLocaleDateString('en-IN')}</td>
+                    <td className="px-6 py-4 text-xs font-black text-gray-900 whitespace-nowrap">{bd.machineName}</td>
+                    <td className="px-6 py-4 text-xs text-gray-600">{bd.failureType}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest border ${severityColor(bd.severity)}`}>{bd.severity}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-700">{bd.downtimeHours}h</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">₹{bd.downtimeCost.toLocaleString('en-IN')}</td>
-                    <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{bd.technicianAssigned}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4 text-xs font-black text-gray-700">{bd.downtimeHours}h</td>
+                    <td className="px-6 py-4 text-xs font-black text-gray-900">₹{bd.downtimeCost.toLocaleString('en-IN')}</td>
+                    <td className="px-6 py-4 text-xs text-gray-600 font-bold whitespace-nowrap">{bd.technicianAssigned}</td>
+                    <td className="px-6 py-4">
                       {editingId === bd.id ? (
                         <div className="flex items-center gap-1">
-                          <select
-                            className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none"
-                            value={editStatus}
-                            onChange={(e) => setEditStatus(e.target.value as BreakdownStatus)}
-                          >
+                          <select className="text-xs border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-sky-500/20" value={editStatus} onChange={(e) => setEditStatus(e.target.value as BreakdownStatus)}>
                             {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                           </select>
-                          <button onClick={() => saveStatus(bd.id)} className="p-1 text-green-600 hover:text-green-800"><Check size={14} /></button>
+                          <button onClick={() => saveStatus(bd.id)} className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"><Check size={14} /></button>
                         </div>
                       ) : (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor(bd.status)}`}>{bd.status}</span>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${statusVariant(bd.status)}`}>{bd.status}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => handleEditStatus(bd)} className="p-1 text-gray-400 hover:text-sky-600 transition" title="Edit status">
-                        <Edit2 size={14} />
-                      </button>
+                    <td className="px-6 py-4">
+                      <button onClick={() => { setEditingId(bd.id); setEditStatus(bd.status); }} className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><Edit2 size={16}
+ /></button>
                     </td>
                   </tr>
                 ))
@@ -331,8 +304,91 @@ const BreakdownLogPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 border-t bg-gray-50 text-xs text-gray-500">
-          Showing {filteredBreakdowns.length} of {breakdowns.length} records
+
+        {/* Mobile Card View */}
+        <div className="md:hidden flex-1 overflow-auto p-4 space-y-4 bg-gray-50/50">
+          {filteredBreakdowns.length === 0 ? (
+            <div className="px-6 py-12 text-center bg-white rounded-2xl border border-dashed border-gray-200">
+              <AlertOctagon size={48} className="mx-auto mb-4 text-gray-200" />
+              <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No downtime records found</p>
+            </div>
+          ) : (
+            filteredBreakdowns.map((bd) => (
+              <div key={bd.id} className="bg-white p-5 rounded-2xl shadow-md border border-gray-100 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-sm font-black text-gray-900 leading-tight">{bd.machineName}</h3>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight mt-1">
+                      {new Date(bd.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  <span className={`inline-flex px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${severityColor(bd.severity)}`}>
+                    {bd.severity}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
+                  <div>
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Failure Type</p>
+                    <p className="text-xs font-bold text-gray-700">{bd.failureType}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Downtime</p>
+                    <p className="text-xs font-black text-gray-900">{bd.downtimeHours}h</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Impact Cost</p>
+                    <p className="text-xs font-black text-sky-600">₹{bd.downtimeCost.toLocaleString('en-IN')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Operator</p>
+                    <p className="text-xs font-bold text-gray-700 truncate">{bd.technicianAssigned}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                   <div className="flex-1">
+                    {editingId === bd.id ? (
+                      <select 
+                        className="text-[10px] border border-gray-300 rounded-lg px-2 py-1.5 w-full focus:ring-2 focus:ring-sky-500/20" 
+                        value={editStatus} 
+                        onChange={(e) => setEditStatus(e.target.value as BreakdownStatus)}
+                      >
+                        {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    ) : (
+                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${statusVariant(bd.status)}`}>
+                        {bd.status}
+                      </span>
+                    )}
+                   </div>
+                   <div className="flex gap-2 ml-4">
+                    {editingId === bd.id ? (
+                      <button onClick={() => saveStatus(bd.id)} className="p-2 bg-green-500 text-white rounded-xl shadow-lg shadow-green-100 active:scale-95 transition-all">
+                        <Check size={16} />
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => { setEditingId(bd.id); setEditStatus(bd.status); }} 
+                        className="p-2 text-sky-600 bg-sky-50 rounded-xl hover:bg-sky-100 transition-all font-bold text-[10px] flex items-center gap-2 px-4 uppercase tracking-widest"
+                      >
+                        <Edit2 size={14} /> Update
+                      </button>
+                    )}
+                   </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        
+        {/* Footer/Summary */}
+        <div className="p-4 border-t bg-gray-50 flex items-center justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></div>
+            System Generated Audit Trail
+          </div>
+          <div>{filteredBreakdowns.length} Reports Displayed</div>
         </div>
       </div>
     </div>

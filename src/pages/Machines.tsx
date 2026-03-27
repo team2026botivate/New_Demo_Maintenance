@@ -110,7 +110,7 @@ const Machines = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const handleSort = (column) => {
+  const handleSort = (column: string) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -143,8 +143,8 @@ const Machines = () => {
       return matchesSearch && matchesDepartment && matchesStatus;
     })
     .sort((a, b) => {
-      const aValue = a[sortColumn];
-      const bValue = b[sortColumn];
+      const aValue = (a as any)[sortColumn];
+      const bValue = (b as any)[sortColumn];
 
       if (typeof aValue === "string" && typeof bValue === "string") {
         return sortDirection === "asc"
@@ -159,7 +159,7 @@ const Machines = () => {
       return 0;
     });
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "operational":
         return (
@@ -192,7 +192,7 @@ const Machines = () => {
     }
   };
 
-  const getHealthIndicator = (score) => {
+  const getHealthIndicator = (score: number) => { // Add type for score parameter
     let color = "";
     if (score >= 90) color = "bg-green-500";
     else if (score >= 70) color = "bg-blue-500";
@@ -207,7 +207,7 @@ const Machines = () => {
     );
   };
 
-  const getTaskAssignmentBadge = (assigned) => {
+  const getTaskAssignmentBadge = (assigned: boolean) => { // Add type for assigned parameter
     if (assigned) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -224,40 +224,43 @@ const Machines = () => {
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6 p-4 sm:px-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-xl font-bold text-gray-800">Machines</h1>
+        <div>
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Machines</h1>
+          <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-widest">Equipment Master List</p>
+        </div>
         <Link
           to="/machines/new"
-          className="inline-flex items-center px-4 py-2 text-xs font-medium text-white bg-sky-600 rounded-md border border-transparent shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 w-full sm:w-auto justify-center"
+          className="inline-flex items-center px-6 py-3 text-sm font-black text-white bg-sky-600 rounded-xl border border-transparent shadow-xl shadow-sky-100 hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-500/10 w-full sm:w-auto justify-center transition-all active:scale-95 uppercase tracking-widest"
         >
-          <Plus size={16} className="mr-2" />
+          <Plus size={18} className="mr-2" />
           Add Machine
         </Link>
       </div>
 
       {/* Filter and Search */}
-      <div className="flex flex-col p-4 space-y-4 bg-white rounded-lg shadow-lg">
-        <div className="w-full">
-          <div className="relative">
+      <div className="flex flex-col p-5 space-y-4 bg-white rounded-2xl shadow-lg border border-gray-100 transition-all lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:space-x-4">
+        <div className="flex flex-1 max-w-lg">
+          <div className="relative w-full group">
             <input
               type="text"
               placeholder="Search machines, parts..."
-              className="py-2 pr-4 pl-10 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="py-3 pr-4 pl-11 w-full rounded-xl border border-gray-200 bg-gray-50/50 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500/50 focus:bg-white transition-all text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search
-              size={20}
-              className="absolute left-3 top-1/2 text-gray-400 transform -translate-y-1/2"
+              size={18}
+              className="absolute left-4 top-1/2 text-gray-400 transform -translate-y-1/2 group-focus-within:text-sky-500 transition-colors"
             />
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex items-center space-x-2 flex-1">
-            <Filter size={16} className="text-gray-500 flex-shrink-0" />
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center space-x-2 relative group flex-1 sm:flex-none">
+            <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors pointer-events-none" />
             <select
-              className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2.5 pl-10 w-full lg:min-w-[180px] rounded-xl border border-gray-200 bg-gray-50/50 text-xs focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all appearance-none font-bold"
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
             >
@@ -267,9 +270,9 @@ const Machines = () => {
               <option value="Production">Production</option>
             </select>
           </div>
-          <div className="flex items-center space-x-2 flex-1">
+          <div className="flex-1 sm:flex-none">
             <select
-              className="px-3 py-2 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2.5 w-full rounded-xl border border-gray-200 bg-gray-50/50 text-xs focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all appearance-none font-bold"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >

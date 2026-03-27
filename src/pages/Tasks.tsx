@@ -124,7 +124,7 @@ const Tasks: React.FC = () => {
       // For admin, show all tasks
       // Check against both user.username and user.id for compatibility
       if (user?.role === 'user') {
-        const userIdentifier = user.username || user.id || 'user';
+        const userIdentifier = user.id || 'user';
         console.log('Filtering for user:', userIdentifier, 'Task assigned to:', task.assignedTo);
         if (task.assignedTo !== userIdentifier) {
           return false;
@@ -226,44 +226,44 @@ const Tasks: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 px-4 py-6 sm:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Maintenance Tasks</h1>
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Maintenance Tasks</h1>
           {user?.role === 'user' && (
-            <p className="text-xs text-gray-500 mt-1">Showing tasks assigned to you</p>
+            <p className="text-[10px] text-sky-600 font-bold uppercase tracking-widest mt-1">Personal Worklist</p>
           )}
         </div>
         {user?.role === 'admin' && (
-          <button className="inline-flex items-center px-4 py-2 text-xs font-medium text-white bg-sky-600 rounded-md border border-transparent shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
-            <Plus size={16} className="mr-2" />
+          <button className="inline-flex items-center px-6 py-3 text-sm font-black text-white bg-sky-600 rounded-xl border border-transparent shadow-xl shadow-sky-100 hover:bg-sky-700 focus:outline-none transition-all active:scale-95 uppercase tracking-widest w-full sm:w-auto justify-center">
+            <Plus size={18} className="mr-2" />
             Create Task
           </button>
         )}
       </div>
 
       {/* Filter and Search */}
-      <div className="flex flex-col p-4 space-y-4 bg-white rounded-lg shadow-lg md:flex-row md:items-center md:justify-between md:space-y-0 md:space-x-4">
-        <div className="flex flex-1 max-w-md">
-          <div className="relative w-full">
+      <div className="flex flex-col p-5 space-y-4 bg-white rounded-2xl shadow-lg border border-gray-100 transition-all lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:space-x-4">
+        <div className="flex flex-1 max-w-lg">
+          <div className="relative w-full group">
             <input
               type="text"
               placeholder="Search tasks..."
-              className="py-2 pr-4 pl-10 w-full rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="py-3 pr-4 pl-11 w-full rounded-xl border border-gray-200 bg-gray-50/50 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500/50 focus:bg-white transition-all text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search
-              size={20}
-              className="absolute left-3 top-1/2 text-gray-400 transform -translate-y-1/2"
+              size={18}
+              className="absolute left-4 top-1/2 text-gray-400 transform -translate-y-1/2 group-focus-within:text-sky-500 transition-colors"
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="flex items-center space-x-2">
-            <Filter size={16} className="text-gray-500" />
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center space-x-2 relative group flex-1 sm:flex-none">
+            <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors pointer-events-none" />
             <select
-              className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2.5 pl-10 w-full lg:min-w-[180px] rounded-xl border border-gray-200 bg-gray-50/50 text-xs focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all appearance-none font-bold"
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
             >
@@ -273,9 +273,9 @@ const Tasks: React.FC = () => {
               <option value="Production">Production</option>
             </select>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex-1 sm:flex-none">
             <select
-              className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2.5 w-full rounded-xl border border-gray-200 bg-gray-50/50 text-xs focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all appearance-none font-bold"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
@@ -286,9 +286,9 @@ const Tasks: React.FC = () => {
               <option value="overdue">Overdue</option>
             </select>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex-1 sm:flex-none">
             <select
-              className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2.5 w-full rounded-xl border border-gray-200 bg-gray-50/50 text-xs focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all appearance-none font-bold"
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
             >

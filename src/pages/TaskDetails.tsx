@@ -4,12 +4,15 @@ import {
   ChevronLeft,
   Clock,
   CheckCircle,
+  AlertTriangle,
+  Calendar,
+  DollarSign,
+  Wrench,
   FileText,
   User,
-  Wrench,
-  DollarSign,
-  Calendar,
-  AlertTriangle,
+  Package,
+  ShoppingCart,
+  Building,
   Upload,
   Paperclip,
   X,
@@ -17,7 +20,74 @@ import {
   Save,
 } from "lucide-react";
 
-const mockTask = {
+interface ChecklistItem {
+  id: number;
+  taskNo: string;
+  department: string;
+  description: string;
+  taskStatus: "pending" | "completed" | "in-progress";
+  image: string | null;
+  remarks: string;
+  soundOfMachine: string;
+  temperature: string;
+  maintenanceCost: string;
+}
+
+interface DocumentItem {
+  id: number;
+  name: string;
+  type: string;
+  uploadedBy: string;
+  date: string;
+}
+
+interface HistoryItemDetail {
+  taskNo: string;
+  department: string;
+  description: string;
+  taskStatus: "pending" | "completed" | "in-progress";
+  remarks: string;
+  soundOfMachine: string;
+  temperature: string;
+  maintenanceCost: string;
+  image: string | null;
+}
+
+interface HistoryEntry {
+  id: number;
+  date: string;
+  user: string;
+  action: string;
+  items: HistoryItemDetail[];
+}
+
+interface MockTask {
+  id: number;
+  machineId: number;
+  machineName: string;
+  department: string;
+  type: string;
+  status: string;
+  dueDate: string;
+  assignedTo: string;
+  priority: string;
+  location: string;
+  vendor: string;
+  description: string;
+  estimatedCost: number;
+  detailsData: Array<{
+    id: number;
+    taskNo: string;
+    taskDate: string;
+    description: string;
+    soundTest: string;
+    temperature: string;
+  }>;
+  checklistItems: ChecklistItem[];
+  documents: DocumentItem[];
+}
+
+const mockTask: MockTask = {
   id: 3,
   machineId: 2,
   machineName: "CNC Machine CNC-305",
@@ -140,15 +210,15 @@ const mockTask = {
 const TaskDetails = () => {
   const [task] = useState(mockTask);
   const [activeTab, setActiveTab] = useState("details");
-  const [checklistItems, setChecklistItems] = useState(mockTask.checklistItems);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [documents, setDocuments] = useState(mockTask.documents);
+  const [checklistItems, setChecklistItems] = useState<any[]>(mockTask.checklistItems);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<any[]>(mockTask.documents);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
-  const handleRowSelect = (id) => {
+  const handleRowSelect = (id: number) => {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
@@ -162,7 +232,7 @@ const TaskDetails = () => {
     }
   };
 
-  const handleChecklistUpdate = (id, field, value) => {
+  const handleChecklistUpdate = (id: number, field: string, value: any) => {
     setChecklistItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, [field]: value } : item
@@ -170,7 +240,7 @@ const TaskDetails = () => {
     );
   };
 
-  const handleImageUpload = (id, e) => {
+  const handleImageUpload = (id: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -215,14 +285,14 @@ const TaskDetails = () => {
     setActiveTab("history");
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadFile(file);
     }
   };
 
-  const handleUploadSubmit = (e) => {
+  const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (uploadFile) {
       const newDocument = {
@@ -239,15 +309,15 @@ const TaskDetails = () => {
     }
   };
 
-  const handleDocumentDelete = (documentId) => {
+  const handleDocumentDelete = (documentId: number) => {
     if (window.confirm("Are you sure you want to delete this document?")) {
       setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
       alert("Document deleted successfully");
     }
   };
 
-  const getStatusBadge = (status) => {
-    const badges = {
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, string> = {
       completed: "bg-green-100 text-green-800",
       pending: "bg-blue-100 text-blue-800",
       "in-progress": "bg-purple-100 text-purple-800",
@@ -264,8 +334,8 @@ const TaskDetails = () => {
     );
   };
 
-  const getPriorityBadge = (priority) => {
-    const badges = {
+  const getPriorityBadge = (priority: string) => {
+    const badges: Record<string, string> = {
       critical: "bg-red-100 text-red-800 border-red-300",
       high: "bg-amber-100 text-amber-800",
       medium: "bg-blue-100 text-blue-800",
@@ -282,17 +352,20 @@ const TaskDetails = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4 overflow-x-auto">
           <Link
             to="/tasks"
-            className="flex items-center text-sky-600 hover:text-sky-900"
+            className="flex items-center text-sky-600 hover:text-sky-900 font-bold text-sm"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} className="mr-1" />
             <span>Back to Tasks</span>
           </Link>
-          <h1 className="flex-1 text-lg md:text-xl font-bold text-gray-800">
-            {task.type} - {task.machineName}
-          </h1>
+          <div className="flex-1">
+            <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+              {task.type}
+            </h1>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{task.machineName}</p>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             {getStatusBadge(task.status)}
             {getPriorityBadge(task.priority)}
@@ -300,15 +373,15 @@ const TaskDetails = () => {
         </div>
 
         {/* Task Header Card */}
-        <div className="bg-white rounded-lg shadow-lg">
-          <div className="p-4 md:p-6 border-b">
-            <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="p-5 sm:p-6 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-lg font-semibold">{task.machineName}</h2>
-                <p className="text-gray-500">{task.department} Department</p>
+                <h2 className="text-lg font-black text-gray-900">{task.machineName}</h2>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{task.department} Department</p>
               </div>
               <button
-                className="px-4 py-2 text-white bg-sky-600 rounded-md hover:bg-sky-700 w-full md:w-auto"
+                className="px-6 py-3 text-sm font-black text-white bg-sky-600 rounded-xl hover:bg-sky-700 shadow-xl shadow-sky-100 transition-all active:scale-95 uppercase tracking-widest w-full sm:w-auto"
                 onClick={() => setShowUpdateForm(true)}
               >
                 Update Status
@@ -647,7 +720,7 @@ const TaskDetails = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {history.map((entry) => (
+                    {history.map((entry: HistoryEntry) => (
                       <div key={entry.id} className="border rounded-lg p-4 bg-white">
                         <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
                           <div>
@@ -657,7 +730,7 @@ const TaskDetails = () => {
                           <span className="text-xs text-gray-500">{new Date(entry.date).toLocaleDateString()}</span>
                         </div>
                         <div className="space-y-4">
-                          {entry.items.map((item, idx) => (
+                          {entry.items.map((item: HistoryItemDetail, idx: number) => (
                             <div key={idx} className="bg-gray-50 p-4 rounded-lg">
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
                                 <div>

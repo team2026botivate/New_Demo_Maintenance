@@ -26,49 +26,51 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-sky-100 via-white to-sky-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative background blur */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-sky-200/30 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-200/30 rounded-full blur-[100px]" />
+    <div className="min-h-screen bg-sky-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background elements - Premium Sky Blue pattern */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-sky-200/40 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/40 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-[0.03] rotate-12 bg-[radial-gradient(circle,theme(colors.sky.500)_1px,transparent_1px)] [background-size:40px_40px]" />
       </div>
 
-      <div className="max-w-md w-full relative z-10">
-        {/* Main card */}
-        <div className="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/50 ring-1 ring-black/5 transform transition-all duration-300">
+      <div className="max-w-md w-full relative z-10 animate-fade-in-up">
+        {/* Main card - High contrast Sky Blue */}
+        <div className="bg-white p-8 sm:px-10 sm:py-10 rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(186,230,253,0.5)] border border-sky-100">
+          
           {/* Header section */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-6">
               <div className="relative group">
-                <div className="absolute inset-0 bg-sky-400 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
-                <div className="relative h-28 w-28 bg-white rounded-full flex items-center justify-center shadow-lg border-[6px] border-white mx-auto transform transition-transform duration-300 group-hover:scale-105">
+                <div className="absolute inset-0 bg-sky-400/20 rounded-3xl blur-2xl group-hover:opacity-40 transition-opacity" />
+                <div className="relative h-20 w-20 bg-white rounded-2xl flex items-center justify-center shadow-lg border-[1px] border-sky-100 mx-auto overflow-hidden">
                   <img 
                     src="/botivate-logo.jpg" 
                     alt="Botivate Logo" 
-                    className="w-full h-full object-cover rounded-full" 
+                    className="w-full h-full object-cover" 
                   />
                 </div>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-2 font-medium uppercase tracking-wide">
-              Maintenance Management System
+            <h1 className="text-3xl font-extrabold text-sky-900 mb-2 tracking-tight">
+              Welcome Back
+            </h1>
+            <p className="text-[11px] text-sky-500 font-bold uppercase tracking-[0.3em]">
+              Maintenance Intelligence
             </p>
           </div>
 
-          {/* Form section */}
-          <div className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Username field */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider ml-1">
+              <label className="block text-[11px] font-bold text-sky-800/80 uppercase tracking-widest ml-1">
                 Username
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User
-                    className={`h-5 w-5 transition-colors duration-200 ${
-                      focusedField === "username" ? "text-sky-600" : "text-gray-400 group-hover:text-gray-500"
-                    }`}
-                  />
+                <div className="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none">
+                  <div className="h-10 w-10 flex items-center justify-center text-sky-400 group-focus-within:text-sky-600 transition-colors">
+                    <User size={19} strokeWidth={2.5} />
+                  </div>
                 </div>
                 <input
                   type="text"
@@ -77,24 +79,24 @@ const Login = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   onFocus={() => setFocusedField("username")}
                   onBlur={() => setFocusedField(null)}
-                  className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 focus:bg-white transition-all duration-200 hover:border-gray-300"
-                  placeholder="Enter your username"
+                  className={`block w-full pl-11 pr-4 py-3 bg-sky-50/50 border rounded-2xl text-sky-900 placeholder-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:bg-white transition-all duration-300 ${
+                    focusedField === "username" ? "border-sky-500/50 shadow-sm" : "border-sky-100/80"
+                  }`}
+                  placeholder="admin"
                 />
               </div>
             </div>
 
             {/* Password field */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider ml-1">
+              <label className="block text-[11px] font-bold text-sky-800/80 uppercase tracking-widest ml-1">
                 Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock
-                    className={`h-5 w-5 transition-colors duration-200 ${
-                      focusedField === "password" ? "text-sky-600" : "text-gray-400 group-hover:text-gray-500"
-                    }`}
-                  />
+                <div className="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none">
+                  <div className="h-10 w-10 flex items-center justify-center text-sky-400 group-focus-within:text-sky-600 transition-colors">
+                    <Lock size={19} strokeWidth={2.5} />
+                  </div>
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -103,87 +105,70 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setFocusedField("password")}
                   onBlur={() => setFocusedField(null)}
-                  className="block w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 focus:bg-white transition-all duration-200 hover:border-gray-300"
-                  placeholder="Enter your password"
+                  className={`block w-full pl-11 pr-12 py-3 bg-sky-50/50 border rounded-2xl text-sky-900 placeholder-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:bg-white transition-all duration-300 ${
+                    focusedField === "password" ? "border-sky-500/50 shadow-sm" : "border-sky-100/80"
+                  }`}
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-sky-300 hover:text-sky-600 transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-sky-600 transition-colors duration-200" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-sky-600 transition-colors duration-200" />
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* Submit button */}
-            <button
-              onClick={handleSubmit}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-sky-200 transform transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-            >
-              Sign in
-            </button>
+            <div className="pt-3">
+              <button
+                type="submit"
+                className="w-full py-4 px-6 bg-sky-600 hover:bg-sky-500 text-white text-sm font-black rounded-2xl shadow-xl shadow-sky-200 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] active:translate-y-0 focus:outline-none tracking-[0.2em] uppercase"
+              >
+                Sign In
+              </button>
+            </div>
+          </form>
 
-            {/* Demo credentials */}
-            <div className="pt-4">
-              <div className="p-4 bg-gray-50/80 rounded-2xl border border-gray-100">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 text-center">
-                  Demo Credentials
-                </p>
-                <div className="space-y-2">
-                  <div
-                    className="flex items-center justify-between p-3 bg-white border border-gray-200/60 rounded-xl shadow-sm cursor-pointer hover:border-sky-200 hover:shadow-md transition-all duration-200 group"
-                    onClick={() => {
-                      setUsername("admin");
-                      setPassword("admin123");
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center text-sky-600 font-bold text-xs group-hover:bg-sky-600 group-hover:text-white transition-colors">
-                        A
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">Admin</span>
-                    </div>
-                    <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500 font-mono group-hover:bg-sky-50 group-hover:text-sky-700 transition-colors">
-                      admin / admin123
-                    </code>
-                  </div>
-                  
-                  <div
-                    className="flex items-center justify-between p-3 bg-white border border-gray-200/60 rounded-xl shadow-sm cursor-pointer hover:border-sky-200 hover:shadow-md transition-all duration-200 group"
-                    onClick={() => {
-                      setUsername("user");
-                      setPassword("user123");
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-xs group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        U
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">User</span>
-                    </div>
-                    <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500 font-mono group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-colors">
-                      user / user123
-                    </code>
-                  </div>
+          {/* Demo credentials */}
+          <div className="mt-8 pt-8 border-t border-sky-100">
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => { setUsername("admin"); setPassword("admin123"); }}
+                className="flex items-center gap-3 p-3 bg-sky-50 hover:bg-white border border-sky-50 hover:border-sky-200 rounded-2xl transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center text-white font-bold text-xs group-hover:scale-110 transition-transform">A</div>
+                <div className="flex flex-col text-left">
+                  <span className="text-xs font-bold text-sky-900">Admin</span>
+                  <span className="text-[10px] text-sky-400 font-medium">admin123</span>
                 </div>
-              </div>
+              </button>
+              
+              <button
+                onClick={() => { setUsername("user"); setPassword("user123"); }}
+                className="flex items-center gap-3 p-3 bg-sky-50 hover:bg-white border border-sky-50 hover:border-sky-200 rounded-2xl transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white font-bold text-xs group-hover:scale-110 transition-transform">U</div>
+                <div className="flex flex-col text-left">
+                  <span className="text-xs font-bold text-sky-900">User</span>
+                  <span className="text-[10px] text-sky-400 font-medium">user123</span>
+                </div>
+              </button>
             </div>
+          </div>
 
-            {/* Footer */}
-            <div className="text-center">
-              <p className="text-xs text-gray-400 font-medium">
-                Powered by <span className="text-gray-600 font-bold hover:text-sky-600 transition-colors cursor-pointer">Botivate</span>
-              </p>
-            </div>
+          <div className="mt-8 text-center">
+            <p className="text-[10px] text-sky-400 font-bold uppercase tracking-widest">
+              Powered by <span className="text-sky-600 font-black">Botivate</span>
+            </p>
           </div>
         </div>
       </div>
     </div>
+
+
+
+
   );
 };
 

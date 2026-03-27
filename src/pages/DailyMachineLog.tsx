@@ -5,6 +5,7 @@ import useDailyLogStore from '../store/dailyLogStore';
 import { runRulesForMachine } from '../services/ruleEngine';
 import { machineMasterData } from '../services/ruleEngine';
 import { DailyMachineLog } from '../models/types';
+import Modal from '../components/Modal';
 
 const initialForm = {
   machineId: '',
@@ -77,38 +78,44 @@ const DailyMachineLogPage: React.FC = () => {
   };
 
   const inputCls = (field: string) =>
-    `w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-      errors[field] ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'
+    `w-full px-4 py-2 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all ${
+      errors[field] ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50/50 hover:bg-white focus:bg-white'
     }`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
         <div>
-          <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Activity size={22} className="text-sky-500" />
+          <h1 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+            <div className="p-2 bg-sky-100 rounded-lg shadow-sm shadow-sky-50">
+              <Activity size={24} className="text-sky-600" />
+            </div>
             Daily Machine Log
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Record daily operational data for predictive analysis</p>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 ml-11">Operational Intelligence</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition text-sm font-medium shadow-sm"
+          onClick={() => setShowForm(true)}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-sky-600 text-white rounded-xl hover:bg-sky-700 transition-all text-sm font-black shadow-xl shadow-sky-100 hover:-translate-y-0.5 active:scale-95 uppercase tracking-widest w-full sm:w-auto"
         >
-          <Plus size={16} />
-          {showForm ? 'Cancel' : 'Add Log Entry'}
+          <Plus size={18} />
+          Add Log Entry
         </button>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b">New Daily Log Entry</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Modal Form */}
+      <Modal 
+        isOpen={showForm} 
+        onClose={() => setShowForm(false)} 
+        title="New Daily Log Entry"
+        maxWidth="max-w-4xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Machine */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Machine *</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Machine *</label>
               <select
                 className={inputCls('machineId')}
                 value={form.machineId}
@@ -119,12 +126,12 @@ const DailyMachineLogPage: React.FC = () => {
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
-              {errors.machineId && <p className="text-xs text-red-500 mt-1">{errors.machineId}</p>}
+              {errors.machineId && <p className="text-xs text-red-500 mt-1 ml-1">{errors.machineId}</p>}
             </div>
 
             {/* Date */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Date *</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Date *</label>
               <input
                 type="date"
                 className={inputCls('date')}
@@ -132,46 +139,50 @@ const DailyMachineLogPage: React.FC = () => {
                 max={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
               />
-              {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
+              {errors.date && <p className="text-xs text-red-500 mt-1 ml-1">{errors.date}</p>}
             </div>
 
             {/* Runtime Hours */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Runtime Hours *</label>
-              <div className="relative">
-                <Clock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Runtime Hours *</label>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-gray-50 text-gray-400 group-focus-within:text-sky-500 transition-colors">
+                  <Clock size={16} />
+                </div>
                 <input
                   type="number"
                   min={0} max={24} step={0.5}
                   placeholder="e.g. 8"
-                  className={`pl-8 ${inputCls('runtimeHours')}`}
+                  className={`pl-12 ${inputCls('runtimeHours')}`}
                   value={form.runtimeHours}
                   onChange={(e) => setForm({ ...form, runtimeHours: e.target.value })}
                 />
               </div>
-              {errors.runtimeHours && <p className="text-xs text-red-500 mt-1">{errors.runtimeHours}</p>}
+              {errors.runtimeHours && <p className="text-xs text-red-500 mt-1 ml-1">{errors.runtimeHours}</p>}
             </div>
 
             {/* Temperature */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Temperature (°C) *</label>
-              <div className="relative">
-                <Thermometer size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Temperature (°C) *</label>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-gray-50 text-gray-400 group-focus-within:text-sky-500 transition-colors">
+                  <Thermometer size={16} />
+                </div>
                 <input
                   type="number"
                   min={0} max={200}
                   placeholder="e.g. 45"
-                  className={`pl-8 ${inputCls('temperature')}`}
+                  className={`pl-12 ${inputCls('temperature')}`}
                   value={form.temperature}
                   onChange={(e) => setForm({ ...form, temperature: e.target.value })}
                 />
               </div>
-              {errors.temperature && <p className="text-xs text-red-500 mt-1">{errors.temperature}</p>}
+              {errors.temperature && <p className="text-xs text-red-500 mt-1 ml-1">{errors.temperature}</p>}
             </div>
 
             {/* Load */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Load (%) *</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Load (%) *</label>
               <input
                 type="number"
                 min={0} max={100}
@@ -180,132 +191,170 @@ const DailyMachineLogPage: React.FC = () => {
                 value={form.load}
                 onChange={(e) => setForm({ ...form, load: e.target.value })}
               />
-              {errors.load && <p className="text-xs text-red-500 mt-1">{errors.load}</p>}
+              {errors.load && <p className="text-xs text-red-500 mt-1 ml-1">{errors.load}</p>}
             </div>
 
             {/* Operator */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Operator Name *</label>
-              <div className="relative">
-                <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Operator Name *</label>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md bg-gray-50 text-gray-400 group-focus-within:text-sky-500 transition-colors">
+                  <User size={16} />
+                </div>
                 <input
                   type="text"
                   placeholder="e.g. Rajesh Kumar"
-                  className={`pl-8 ${inputCls('operatorName')}`}
+                  className={`pl-12 ${inputCls('operatorName')}`}
                   value={form.operatorName}
                   onChange={(e) => setForm({ ...form, operatorName: e.target.value })}
                 />
               </div>
-              {errors.operatorName && <p className="text-xs text-red-500 mt-1">{errors.operatorName}</p>}
+              {errors.operatorName && <p className="text-xs text-red-500 mt-1 ml-1">{errors.operatorName}</p>}
             </div>
 
             {/* Remarks */}
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Remarks</label>
-              <div className="relative">
-                <MessageSquare size={14} className="absolute left-3 top-3 text-gray-400" />
+            <div className="md:col-span-2 lg:col-span-3 space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 ml-1">Remarks</label>
+              <div className="relative group">
+                <div className="absolute left-3 top-3 p-1.5 rounded-md bg-gray-50 text-gray-400 group-focus-within:text-sky-500 transition-colors">
+                  <MessageSquare size={16} />
+                </div>
                 <textarea
-                  rows={2}
+                  rows={3}
                   placeholder="Any observations or notes..."
-                  className={`pl-8 ${inputCls('remarks')}`}
+                  className={`pl-12 ${inputCls('remarks')}`}
                   value={form.remarks}
                   onChange={(e) => setForm({ ...form, remarks: e.target.value })}
                 />
               </div>
             </div>
+          </div>
 
-            {/* Submit */}
-            <div className="sm:col-span-2 lg:col-span-3 flex justify-end gap-3 pt-2 border-t">
-              <button
-                type="button"
-                onClick={() => { setShowForm(false); setErrors({}); setForm({ ...initialForm, date: new Date().toISOString().slice(0, 10) }); }}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-5 py-2 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition font-medium disabled:opacity-50"
-              >
-                {submitting ? 'Saving...' : 'Save Log'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => { setShowForm(false); setErrors({}); setForm({ ...initialForm, date: new Date().toISOString().slice(0, 10) }); }}
+              className="px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-8 py-2.5 text-sm font-bold bg-sky-600 text-white rounded-xl hover:bg-sky-700 transition-all shadow-md shadow-sky-100 disabled:opacity-50 active:scale-95"
+            >
+              {submitting ? 'Saving...' : 'Save Log Entry'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {machineMasterData.slice(0, 4).map((m) => {
           const runtime = useDailyLogStore.getState().getTotalRuntime(m.id, 30);
           const pct = Math.min(Math.round((runtime / m.runtimeThreshold) * 100), 100);
           return (
-            <div key={m.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <p className="text-xs font-medium text-gray-500 truncate">{m.name}</p>
-              <p className="text-lg font-bold text-gray-800 mt-1">{runtime.toFixed(0)} hrs</p>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+            <div key={m.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 hover:shadow-xl transition-all hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-black text-gray-600 uppercase tracking-widest truncate">{m.name}</p>
+                <div className={`w-2 h-2 rounded-full ${pct >= 100 ? 'bg-red-500 animate-pulse' : pct >= 80 ? 'bg-amber-500' : 'bg-green-500'}`} />
+              </div>
+              <p className="text-3xl font-black text-gray-900">{runtime.toFixed(1)} <span className="text-sm font-bold text-gray-400">HRS</span></p>
+              <div className="w-full bg-gray-100 rounded-full h-2 mt-4 overflow-hidden shadow-inner">
                 <div
-                  className={`h-1.5 rounded-full ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-green-500'}`}
+                  className={`h-full rounded-full transition-all duration-1000 ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-sky-500'}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">{pct}% of {m.runtimeThreshold}h threshold</p>
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{pct}% of threshold</p>
+                <p className="text-[9px] font-black text-sky-600 uppercase tracking-tighter">{m.runtimeThreshold}H LIMIT</p>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b bg-gray-50">
-          <h2 className="text-sm font-semibold text-gray-700">Log History</h2>
-          <div className="flex items-center gap-2">
-            <Filter size={14} className="text-gray-400" />
-            <select
-              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              value={filterMachineId}
-              onChange={(e) => setFilterMachineId(e.target.value)}
-            >
-              <option value="all">All Machines</option>
-              {machineMasterData.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
+      {/* Table Section */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col md:h-[600px]">
+        {/* Table Header/Filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 border-b bg-white">
+          <div>
+            <h2 className="text-lg font-black text-gray-900 tracking-tight">Log History</h2>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Historical records of machine operations</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative group w-full sm:w-auto">
+              <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors" />
+              <select
+                className="text-sm border border-gray-200 rounded-xl pl-10 pr-4 py-2 bg-gray-50/50 appearance-none w-full sm:min-w-[180px] focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500/50 focus:bg-white transition-all font-bold text-gray-700"
+                value={filterMachineId}
+                onChange={(e) => setFilterMachineId(e.target.value)}
+              >
+                <option value="all">All Machines</option>
+                {machineMasterData.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-sky-50">
+        {/* Desktop Table Body */}
+        <div className="hidden md:block flex-1 overflow-auto relative scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          <table className="w-full border-separate border-spacing-0">
+            <thead className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm">
               <tr>
                 {['Date', 'Machine', 'Runtime (hrs)', 'Temperature', 'Load %', 'Operator', 'Remarks'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-sky-800 uppercase tracking-wider whitespace-nowrap">
+                  <th key={h} className="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-widest border-b border-gray-200 whitespace-nowrap">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {filteredLogs.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">No logs found</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-6 py-20 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-400">
+                      <Activity size={48} className="mb-4 opacity-10" />
+                      <p className="text-base font-black uppercase tracking-widest">No log entries found</p>
+                      <p className="text-[10px] font-bold">Try adjusting your filters</p>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 filteredLogs.map((log) => {
                   const machine = machineMasterData.find((m) => m.id === log.machineId);
                   const tempWarn = machine && log.temperature > machine.temperatureThreshold;
                   return (
-                    <tr key={log.id} className="border-b hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{log.date}</td>
-                      <td className="px-4 py-3 text-xs font-medium text-gray-800 whitespace-nowrap">{log.machineName}</td>
-                      <td className="px-4 py-3 text-xs text-gray-700">{log.runtimeHours}h</td>
-                      <td className="px-4 py-3 text-xs">
-                        <span className={`font-medium ${tempWarn ? 'text-red-600' : 'text-gray-700'}`}>
-                          {log.temperature}°C{tempWarn && ' ⚠️'}
+                    <tr key={log.id} className="group hover:bg-sky-50/30 transition-colors">
+                      <td className="px-6 py-4 text-xs text-gray-600 whitespace-nowrap font-bold">{log.date}</td>
+                      <td className="px-6 py-4 text-xs font-black text-gray-900 whitespace-nowrap">{log.machineName}</td>
+                      <td className="px-6 py-4 text-xs text-gray-700 font-bold">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                          {log.runtimeHours}h
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-700">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg font-black uppercase tracking-widest border ${tempWarn ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+                          {log.temperature}°C {tempWarn && <span className="ml-1 animate-pulse">⚠️</span>}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-700">{log.load}%</td>
-                      <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{log.operatorName}</td>
-                      <td className="px-4 py-3 text-xs text-gray-500 max-w-[180px] truncate">{log.remarks || '—'}</td>
+                      <td className="px-6 py-4 text-xs font-black text-gray-700">{log.load}%</td>
+                      <td className="px-6 py-4 text-xs text-gray-700 font-bold whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-white text-[10px] font-black uppercase tracking-widest shadow-md shadow-sky-100">
+                            {log.operatorName.charAt(0)}
+                          </div>
+                          {log.operatorName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-500 max-w-[200px] truncate" title={log.remarks}>
+                        {log.remarks || <span className="text-gray-300 italic">No remarks</span>}
+                      </td>
                     </tr>
                   );
                 })
@@ -313,8 +362,70 @@ const DailyMachineLogPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 border-t bg-gray-50 text-xs text-gray-500">
-          Showing {filteredLogs.length} {filteredLogs.length === 1 ? 'entry' : 'entries'}
+
+        {/* Mobile Card View */}
+        <div className="md:hidden flex-1 overflow-auto p-4 space-y-4 bg-gray-50/50">
+          {filteredLogs.length === 0 ? (
+            <div className="px-6 py-12 text-center bg-white rounded-2xl border border-dashed border-gray-200">
+              <Activity size={48} className="mx-auto mb-4 text-gray-200" />
+              <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No log entries found</p>
+            </div>
+          ) : (
+            filteredLogs.map((log) => {
+              const machine = machineMasterData.find((m) => m.id === log.machineId);
+              const tempWarn = machine && log.temperature > machine.temperatureThreshold;
+              return (
+                <div key={log.id} className="bg-white p-5 rounded-2xl shadow-md border border-gray-100 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-sm font-black text-gray-900 leading-tight">{log.machineName}</h3>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight mt-1">{log.date}</p>
+                    </div>
+                    {tempWarn && (
+                      <span className="inline-flex px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-700 border border-red-200 animate-pulse">
+                        TEMP WARN
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Runtime</p>
+                      <p className="text-xs font-black text-gray-900">{log.runtimeHours}h</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Temperature</p>
+                      <p className={`text-xs font-black ${tempWarn ? 'text-red-600' : 'text-gray-900'}`}>{log.temperature}°C</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Load %</p>
+                      <p className="text-xs font-black text-sky-600">{log.load}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Operator</p>
+                      <p className="text-xs font-bold text-gray-700 truncate">{log.operatorName}</p>
+                    </div>
+                  </div>
+
+                  {log.remarks && (
+                    <div className="pt-3 border-t border-gray-50">
+                      <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Remarks</p>
+                      <p className="text-[10px] text-gray-600 leading-relaxed bg-gray-50 p-2 rounded-xl italic">"{log.remarks}"</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Table Footer */}
+        <div className="px-6 py-4 border-t bg-gray-50/50 flex items-center justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
+          <div>Showing {filteredLogs.length} entries</div>
+          <div className="flex items-center gap-1.5 text-sky-600 bg-sky-100/50 px-3 py-1 rounded-full border border-sky-100">
+            <div className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+            Live Data Feed
+          </div>
         </div>
       </div>
     </div>

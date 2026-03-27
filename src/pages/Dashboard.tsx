@@ -322,11 +322,11 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-transparent p-0">
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-          <select className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <select className="w-full sm:w-auto px-4 py-2 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm">
             <option value="thisMonth">This Month</option>
             <option value="lastMonth">Last Month</option>
             <option value="lastQuarter">Last Quarter</option>
@@ -334,7 +334,7 @@ const Dashboard = () => {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
             { label: "Total Machines", value: 248, icon: <Wrench size={18} className="text-blue-600" />, color: "bg-blue-100" },
             { label: "Maintenance Tasks", value: 156, icon: <Calendar size={18} className="text-sky-600" />, color: "bg-sky-100" },
@@ -345,17 +345,17 @@ const Dashboard = () => {
           ].map((stat, idx) => (
             <div
               key={idx}
-              className="p-5 bg-white rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+              className="p-4 sm:p-5 bg-white rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
             >
               <div className="flex items-center">
-                <div className={`p-2.5 ${stat.color} rounded-full mr-3`}>
+                <div className={`p-2 ${stat.color} rounded-full mr-3 flex-shrink-0`}>
                   {stat.icon}
                 </div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 uppercase">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider truncate">
                     {stat.label}
                   </p>
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-lg sm:text-xl font-black text-gray-800">
                     {stat.prefix || ""}{stat.value.toLocaleString("en-IN")}
                   </h3>
                 </div>
@@ -367,22 +367,22 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div 
             onClick={() => handleCardClick("machines")}
-            className="p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="p-4 sm:p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
           >
-            <h2 className="flex items-center text-base font-bold text-gray-800 mb-4">
-              <BarChart2 size={20} className="mr-2 text-sky-600" />
+            <h2 className="flex items-center text-sm sm:text-base font-bold text-gray-800 mb-4">
+              <BarChart2 size={18} className="mr-2 text-sky-600" />
               Repair Cost vs Purchase Price
             </h2>
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={repairVsPurchaseData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                <BarChart data={repairVsPurchaseData} margin={{ left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip formatter={(value) => `₹${value.toLocaleString("en-IN")}`} />
-                  <Legend />
-                  <Bar dataKey="purchasePrice" name="Purchase Price" fill="#0284c7" />
-                  <Bar dataKey="repairCost" name="Repair Cost" fill="#F59E0B" />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="purchasePrice" name="Purchase Price" fill="#0284c7" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="repairCost" name="Repair Cost" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -390,13 +390,13 @@ const Dashboard = () => {
 
           <div 
             onClick={() => handleCardClick("departments")}
-            className="p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="p-4 sm:p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
           >
-            <h2 className="flex items-center text-base font-bold text-gray-800 mb-4">
+            <h2 className="flex items-center text-sm sm:text-base font-bold text-gray-800 mb-4">
               <DollarSign size={18} className="mr-2 text-sky-600" />
               Department Cost Analysis
             </h2>
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -405,15 +405,15 @@ const Dashboard = () => {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius="80%"
+                    label={({ name, percent }) => percent > 0.1 ? `${name}` : ''}
                   >
                     {departmentCostData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={["#0284c7", "#60A5FA", "#F59E0B", "#10B981"][index % 4]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => `₹${value.toLocaleString("en-IN")}`} />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -421,23 +421,23 @@ const Dashboard = () => {
 
           <div 
             onClick={() => handleCardClick("temperature")}
-            className="p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="p-4 sm:p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
           >
-            <h2 className="flex items-center text-base font-bold text-gray-800 mb-4">
+            <h2 className="flex items-center text-sm sm:text-base font-bold text-gray-800 mb-4">
               <ThermometerSun size={18} className="mr-2 text-sky-600" />
               Temperature Readings
             </h2>
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={temperatureReadings}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
+                <LineChart data={temperatureReadings} margin={{ left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="HP102" name="HP-102" stroke="#0284c7" />
-                  <Line type="monotone" dataKey="CNC305" name="CNC-305" stroke="#F59E0B" />
-                  <Line type="monotone" dataKey="CB201" name="CB-201" stroke="#10B981" />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Line type="monotone" dataKey="HP102" name="HP-102" stroke="#0284c7" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="CNC305" name="CNC-305" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="CB201" name="CB-201" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -445,34 +445,34 @@ const Dashboard = () => {
 
           <div 
             onClick={() => handleCardClick("repairs")}
-            className="p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="p-4 sm:p-6 bg-white rounded-lg shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
           >
-            <h2 className="flex items-center text-base font-bold text-gray-800 mb-4">
+            <h2 className="flex items-center text-sm sm:text-base font-bold text-gray-800 mb-4">
               <Wrench size={18} className="mr-2 text-sky-600" />
               Frequent Repairs
             </h2>
-            <div className="h-80 flex flex-col justify-between">
+            <div className="h-64 sm:h-80 flex flex-col justify-between">
               <div className="flex-1">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={frequentRepairData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                  <BarChart data={frequentRepairData} margin={{ left: -20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
                     <Tooltip />
-                    <Legend />
-                    <Bar dataKey="repairs" name="Number of Repairs" fill="#EF4444" />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="repairs" name="Repairs" fill="#EF4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex justify-center items-center gap-6 mt-4 pt-4 border-t">
+              <div className="flex justify-center items-center gap-3 sm:gap-6 mt-4 pt-4 border-t">
                 {frequentRepairData.map((machine, idx) => (
                   <div key={idx} className="flex flex-col items-center">
                     <img
                       src={machineImages[idx]}
                       alt={machine.name}
-                      className="w-20 h-20 rounded-xl object-cover mb-2 shadow-lg hover:scale-105 transition-transform"
+                      className="w-12 h-12 sm:w-20 sm:h-20 rounded-xl object-cover mb-1 shadow-md hover:scale-105 transition-transform"
                     />
-                    <span className="text-xs font-medium text-gray-600">{machine.name}</span>
+                    <span className="text-[10px] font-bold text-gray-500">{machine.name}</span>
                   </div>
                 ))}
               </div>
@@ -508,43 +508,42 @@ const Dashboard = () => {
               </div>
 
               <div className="p-6 space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     <button
                       onClick={() => setActiveTab(0)}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${
-                        activeTab === 0 ? "bg-sky-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs transition active:scale-95 ${
+                        activeTab === 0 ? "bg-sky-600 text-white shadow-md shadow-sky-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       Overview ({tableData.length})
                     </button>
                     <button
                       onClick={() => setActiveTab(1)}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${
-                        activeTab === 1 ? "bg-sky-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-bold text-xs transition active:scale-95 ${
+                        activeTab === 1 ? "bg-sky-600 text-white shadow-md shadow-sky-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       Details
                     </button>
                   </div>
 
-                  <div className="flex gap-2 items-center">
-                    <div className="relative">
-                      <Filter size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <div className="flex w-full sm:w-auto gap-2 items-center">
+                    <div className="relative flex-1 sm:flex-none">
+                      <Filter size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                       <input
                         type="text"
                         placeholder="Filter..."
                         value={filterValue === "all" ? "" : filterValue}
                         onChange={(e) => setFilterValue(e.target.value || "all")}
-                        className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full pl-10 pr-4 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                       />
                     </div>
                     <button
                       onClick={addRow}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      className="p-2 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition active:scale-95 shadow-md shadow-green-100"
                     >
                       <Plus size={18} />
-                      Add Row
                     </button>
                   </div>
                 </div>
